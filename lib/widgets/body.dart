@@ -1,20 +1,81 @@
-import 'package:http/http.dart' as http;
-import 'package:weather_app/data/forecast_data.dart';
+import 'package:futuristic/futuristic.dart';
+// import 'package:http/http.dart' as http;
+// import 'package:weather_app/data/forecast_data.dart';
 import 'package:weather_icons/weather_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../data/weather.dart';
-import 'bottom.dart';
+// import 'bottom.dart';
 
 class MyHomePage extends StatefulWidget {
-  var weatherData;
-  MyHomePage({this.weatherData});
   @override
   _MyHomePageState createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  var future;
+  var weatherData;
+
+  WeatherModel weatherModel = new WeatherModel();
+  Future weatherdata() async {
+    return weatherData = await weatherModel.getLocationWeather();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Futuristic(
+      futureBuilder: weatherdata,
+      initialBuilder: (context, start) => Container(
+        width: MediaQuery.of(context).size.width,
+        height: MediaQuery.of(context).size.height,
+        color: Colors.blue[200],
+      ),
+      errorBuilder: (context, error, retry) {
+        final snackbar = SnackBar(
+          duration: Duration(seconds: 1),
+          content: Text(
+            'Check your connection',
+            style: TextStyle(
+                color: Colors.amber[900], fontWeight: FontWeight.bold),
+          ),
+          action: SnackBarAction(
+            label: 'Undo',
+            onPressed: () {},
+          ),
+        );
+        return Scaffold(
+          backgroundColor: Colors.blue,
+          body: Container(
+            child: OutlineButton(
+              onPressed: () {
+                Scaffold.of(context).showSnackBar(snackbar);
+              },
+              child: Center(
+                child: Text(error),
+              ),
+            ),
+          ),
+        );
+      },
+      onData: (value) => MyweatherScreen(
+        weatherData: value,
+      ),
+      busyBuilder: (context) => CircularProgressIndicator(
+        backgroundColor: Colors.black,
+      ),
+    );
+  }
+}
+
+class MyweatherScreen extends StatefulWidget {
+  final weatherData;
+  MyweatherScreen({this.weatherData});
+  @override
+  _MyweatherScreenState createState() => _MyweatherScreenState();
+}
+
+class _MyweatherScreenState extends State<MyweatherScreen> {
   String place;
   String condition;
   double temperture;
@@ -24,29 +85,23 @@ class _MyHomePageState extends State<MyHomePage> {
   String iconUrl;
   int dayOrNight;
 
-  void weatherdata() {
-    place = widget.weatherData['location']['name'];
-    condition = widget.weatherData['current']['condition']['text'];
-    windSpeed = widget.weatherData['current']['wind_kph'];
-    pressure = widget.weatherData['current']['pressure_in'];
-    humidty = widget.weatherData['current']['humidity'];
-    temperture = widget.weatherData['current']['temp_c'];
-    iconUrl = widget.weatherData['current']['condition']['icon'];
-    dayOrNight = widget.weatherData['current']['is_day'];
-    iconUrl = iconUrl.substring(2);
-    if (condition.length >= 22) {
-      condition = '${condition.substring(0, 22)}\n${condition.substring(23)}';
-    }
-
-    print(place);
-    print(condition);
-    print(iconUrl);
-  }
-
   @override
   void initState() {
     super.initState();
-    weatherdata();
+    setState(() {
+      place = widget.weatherData['location']['name'];
+      condition = widget.weatherData['current']['condition']['text'];
+      windSpeed = widget.weatherData['current']['wind_kph'];
+      pressure = widget.weatherData['current']['pressure_in'];
+      humidty = widget.weatherData['current']['humidity'];
+      temperture = widget.weatherData['current']['temp_c'];
+      iconUrl = widget.weatherData['current']['condition']['icon'];
+      dayOrNight = widget.weatherData['current']['is_day'];
+      iconUrl = iconUrl.substring(2);
+      if (condition.length >= 22) {
+        condition = '${condition.substring(0, 22)}\n${condition.substring(23)}';
+      }
+    });
   }
 
   @override
