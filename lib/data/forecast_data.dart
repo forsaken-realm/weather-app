@@ -2,9 +2,10 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
-Future<List<Forecast>> fetchForecastData(http.Client client) async {
+Future<List<Forecast>> fetchForecastData(
+    http.Client client, String place) async {
   final response = await client.get(
-      'http://api.weatherapi.com/v1/forecast.json?key=a9c6320e20bf40c686d91935200310&q=bhatkal&days=1');
+      'http://api.weatherapi.com/v1/forecast.json?key=a9c6320e20bf40c686d91935200310&q=$place&days=1');
 
   // Use the compute function to run parsePhotos in a separate isolate.
   return compute(parsePhotos, response.body);

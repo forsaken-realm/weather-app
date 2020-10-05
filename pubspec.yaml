@@ -23,6 +23,7 @@ dependencies:
   weather_icons: ^2.0.1
   intl: ^0.16.1
   futuristic: ^0.1.3
+  fluttertoast: ^7.1.1
 
 dev_dependencies:
   flutter_test:
@@ -38,9 +39,8 @@ flutter:
 
   
   assets:
-    - images/hh.jpg
-    - images/n.jpg
-    - images/animated/
+    - images/
+  
      
 
    

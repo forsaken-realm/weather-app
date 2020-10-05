@@ -1,12 +1,13 @@
-import 'package:futuristic/futuristic.dart';
-// import 'package:http/http.dart' as http;
-// import 'package:weather_app/data/forecast_data.dart';
+import 'package:flutter/services.dart';
+import 'package:http/http.dart' as http;
+import 'package:weather_app/data/forecast_data.dart';
 import 'package:weather_icons/weather_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../data/weather.dart';
-// import 'bottom.dart';
+import 'bottom.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class MyHomePage extends StatefulWidget {
   @override
@@ -19,51 +20,39 @@ class _MyHomePageState extends State<MyHomePage> {
 
   WeatherModel weatherModel = new WeatherModel();
   Future weatherdata() async {
-    return weatherData = await weatherModel.getLocationWeather();
+    weatherData = await weatherModel.getLocationWeather();
+    return weatherData;
   }
 
   @override
   Widget build(BuildContext context) {
-    return Futuristic(
-      futureBuilder: weatherdata,
-      initialBuilder: (context, start) => Container(
-        width: MediaQuery.of(context).size.width,
-        height: MediaQuery.of(context).size.height,
-        color: Colors.blue[200],
-      ),
-      errorBuilder: (context, error, retry) {
-        final snackbar = SnackBar(
-          duration: Duration(seconds: 1),
-          content: Text(
-            'Check your connection',
-            style: TextStyle(
-                color: Colors.amber[900], fontWeight: FontWeight.bold),
-          ),
-          action: SnackBarAction(
-            label: 'Undo',
-            onPressed: () {},
-          ),
-        );
-        return Scaffold(
-          backgroundColor: Colors.blue,
-          body: Container(
-            child: OutlineButton(
-              onPressed: () {
-                Scaffold.of(context).showSnackBar(snackbar);
-              },
-              child: Center(
-                child: Text(error),
-              ),
-            ),
-          ),
-        );
+    return FutureBuilder(
+      future: weatherdata(),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          Future.delayed(Duration(seconds: 2));
+          Fluttertoast.showToast(
+              msg: "Check you internet or enable Location",
+              toastLength: Toast.LENGTH_SHORT,
+              gravity: ToastGravity.BOTTOM,
+              timeInSecForIosWeb: 1,
+              backgroundColor: Colors.red,
+              textColor: Colors.white,
+              fontSize: 16.0);
+          SystemNavigator.pop();
+        }
+
+        return snapshot.hasData
+            ? MyweatherScreen(weatherData: snapshot.data)
+            : Container(
+                width: double.infinity,
+                height: double.infinity,
+                child: Image(
+                  image: AssetImage('images/sq.gif'),
+                  fit: BoxFit.fitHeight,
+                ),
+              );
       },
-      onData: (value) => MyweatherScreen(
-        weatherData: value,
-      ),
-      busyBuilder: (context) => CircularProgressIndicator(
-        backgroundColor: Colors.black,
-      ),
     );
   }
 }
@@ -103,6 +92,18 @@ class _MyweatherScreenState extends State<MyweatherScreen> {
       }
     });
   }
+
+  final snackBar = SnackBar(
+    duration: Duration(seconds: 1),
+    content: Text(
+      'Waiting for Forecast Data',
+      style: TextStyle(color: Colors.amber[900], fontWeight: FontWeight.bold),
+    ),
+    action: SnackBarAction(
+      label: 'Undo',
+      onPressed: () {},
+    ),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -147,12 +148,8 @@ class _MyweatherScreenState extends State<MyweatherScreen> {
                     color: Colors.white,
                   ),
                 ),
-                Text(
-                  'Noon',
-                  style: GoogleFonts.roboto(fontSize: 18),
-                ),
                 SizedBox(
-                  height: 100,
+                  height: 110,
                 ),
                 Row(
                   children: [
@@ -210,9 +207,22 @@ class _MyweatherScreenState extends State<MyweatherScreen> {
               ],
             ),
           ),
-          // BottomSheetNew(
-          //   futureForecast: future,
-          // ),
+          FutureBuilder<List<Forecast>>(
+            future: fetchForecastData(http.Client(), place),
+            builder: (context, snapshot) {
+              if (snapshot.hasError) print(snapshot.error);
+
+              return snapshot.hasData
+                  ? BottomSheetNew(
+                      futureForecast: snapshot.data,
+                    )
+                  : Center(
+                      child: CircularProgressIndicator(
+                        backgroundColor: Colors.transparent,
+                      ),
+                    );
+            },
+          )
         ],
       ),
     );
