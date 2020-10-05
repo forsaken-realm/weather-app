@@ -8,13 +8,13 @@ import '../data/weather.dart';
 import 'bottom.dart';
 
 class MyHomePage extends StatefulWidget {
+  var weatherData;
+  MyHomePage({this.weatherData});
   @override
   _MyHomePageState createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  var weatherData;
-  var future;
   String place;
   String condition;
   double temperture;
@@ -24,25 +24,19 @@ class _MyHomePageState extends State<MyHomePage> {
   String iconUrl;
   int dayOrNight;
 
-  WeatherModel weatherModel = new WeatherModel();
-
-  void weatherdata() async {
-    weatherData = await weatherModel.getLocationWeather();
-    future = await fetchForecastData(http.Client());
-    setState(() {
-      place = weatherData['location']['name'];
-      condition = weatherData['current']['condition']['text'];
-      windSpeed = weatherData['current']['wind_kph'];
-      pressure = weatherData['current']['pressure_in'];
-      humidty = weatherData['current']['humidity'];
-      temperture = weatherData['current']['temp_c'];
-      iconUrl = weatherData['current']['condition']['icon'];
-      dayOrNight = weatherData['current']['is_day'];
-      iconUrl = iconUrl.substring(2);
-      if (condition.length >= 22) {
-        condition = '${condition.substring(0, 22)}\n${condition.substring(23)}';
-      }
-    });
+  void weatherdata() {
+    place = widget.weatherData['location']['name'];
+    condition = widget.weatherData['current']['condition']['text'];
+    windSpeed = widget.weatherData['current']['wind_kph'];
+    pressure = widget.weatherData['current']['pressure_in'];
+    humidty = widget.weatherData['current']['humidity'];
+    temperture = widget.weatherData['current']['temp_c'];
+    iconUrl = widget.weatherData['current']['condition']['icon'];
+    dayOrNight = widget.weatherData['current']['is_day'];
+    iconUrl = iconUrl.substring(2);
+    if (condition.length >= 22) {
+      condition = '${condition.substring(0, 22)}\n${condition.substring(23)}';
+    }
 
     print(place);
     print(condition);
@@ -161,9 +155,9 @@ class _MyHomePageState extends State<MyHomePage> {
               ],
             ),
           ),
-          BottomSheetNew(
-            futureForecast: future,
-          ),
+          // BottomSheetNew(
+          //   futureForecast: future,
+          // ),
         ],
       ),
     );
