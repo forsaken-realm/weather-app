@@ -32,22 +32,27 @@ class MysplashScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: FutureBuilder<dynamic>(
-        future: weatherdata(),
-        builder: (context, snapshot) {
-          if (snapshot.hasError) print(snapshot.error);
-
-          return snapshot.hasData
-              ? Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => MyHomePage(
-                      weatherData: snapshot.data,
-                    ),
-                  ),
-                )
-              : Center(child: CircularProgressIndicator());
-        },
+      body: Futuristic(
+        futureBuilder: weatherdata(),
+        initialBuilder: (context, start) => Container(
+          height: 100,
+          width: 200,
+          color: Colors.amberAccent,
+        ),
+        busyBuilder: (context) => CircularProgressIndicator(),
+        errorBuilder: (context, error, retry) => Container(
+          width: 100,
+          height: 100,
+          child: Center(
+            child: Text(error.toString()),
+          ),
+        ),
+        dataBuilder: (context, data) => Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => MyHomePage(
+                      weatherData: data,
+                    ))),
       ),
     );
   }
